@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY app.py /app
 
-RUN pip install flask
-
+RUN pip install flask playwright && \
+    playwright install --with-deps
 EXPOSE 10000
 
 CMD ["python", "app.py"]
+
+
