@@ -1,17 +1,11 @@
-# Use official Playwright Python image from Docker Hub
-FROM playwrightcommunity/playwright-python:1.43.1
+FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 
 WORKDIR /app
 
-# Install Python dependencies
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py /app
 
-# Copy app code
-COPY . .
+RUN pip install flask
 
-# Expose port for Render
 EXPOSE 10000
 
-# Run the Flask app
 CMD ["python", "app.py"]
