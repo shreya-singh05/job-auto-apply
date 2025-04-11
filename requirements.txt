@@ -1,0 +1,3 @@
+flask
+selenium
+Flask==2.3.3
