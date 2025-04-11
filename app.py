@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 import time
-import os
 
 app = Flask(__name__)
+
+@app.route("/")
+def health_check():
+    return jsonify({"status": "ok", "message": "Job apply service is running."})
 
 @app.route('/apply', methods=['POST'])
 def apply_jobs():
@@ -29,14 +32,14 @@ def apply_jobs():
 
                 status = "unknown"
 
-                # Attempt to login with Google
+                # Attempt Google login
                 try:
                     login_with_google(page)
                     print("Google login attempted.")
                 except Exception as e:
                     print("Google login failed:", str(e))
 
-                # Handle Captcha
+                # Captcha handling
                 for attempt in range(max_captcha_retries):
                     if handle_captcha(page):
                         print("Captcha solved.")
@@ -48,7 +51,7 @@ def apply_jobs():
                     results.append({"url": url, "status": status})
                     continue
 
-                # Optionally follow to company site
+                # Optional navigation to external company site
                 if follow_to_company_site:
                     try:
                         navigate_to_company_site(page)
@@ -56,7 +59,7 @@ def apply_jobs():
                     except Exception as e:
                         print("Failed to navigate to company site:", str(e))
 
-                # Fill out the form (if provided)
+                # Form filling
                 try:
                     fill_form(page, form_data)
                     status = "applied"
@@ -77,14 +80,13 @@ def login_with_google(page):
     if google_buttons.count() > 0:
         google_buttons.first.click()
         time.sleep(5)
-        # Handle popup if needed – Google login usually involves redirection
+        # TODO: Handle Google login popup if needed
 
 def handle_captcha(page):
-    # Placeholder: You can add OCR or audio reCAPTCHA logic here
     if page.locator("iframe[src*='recaptcha']").count() > 0:
         print("Captcha found.")
-        return False  # Simulate failure for now
-    return True  # No captcha
+        return False  # Placeholder for real solver
+    return True
 
 def navigate_to_company_site(page):
     selectors = [
@@ -111,14 +113,9 @@ def fill_form(page, form_data):
         else:
             print(f"Selector not found: {selector}")
 
-    # Try clicking submit
     submit_buttons = page.locator("button[type='submit'], input[type='submit'], text=Submit")
     if submit_buttons.count() > 0:
         submit_buttons.first.click()
         time.sleep(2)
     else:
         print("No submit button found.")
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
